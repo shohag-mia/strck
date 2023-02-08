@@ -34,7 +34,7 @@ async fn main() {
             let (stream_latency, stream_latency_writer) = metric::create_metric_channel("stream_latency", stream_latency_metric);
             let msn_regression_metric = hdrhistogram::Histogram::new_with_max(1000, 1).unwrap();
             let (msn_regression, msn_regression_writer) = metric::create_metric_channel("msn_regression", msn_regression_metric);
-            let ck = hls::HlsProcessor::new(client, manifest, logger, media_playlist_latency, stream_latency, msn_regression);
+            let ck = hls::HlsProcessor::new(client, manifest, 5, logger, media_playlist_latency, stream_latency, msn_regression);
 
             let metrics = futures::future::join_all(vec![
                 media_playlist_latency_writer.consume().boxed_local(),
