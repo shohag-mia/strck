@@ -347,7 +347,7 @@ impl<S: Snoop, L: EventSink<Extra = HlsEvent>, M: Metric> HlsProcessor<S, L, M> 
         let url = self.url.clone();
         let client = self.client.clone();
         let log = self.log.clone();
-        let mut sleep_time = self.sleep_time.clone();
+        let sleep_time = self.sleep_time.clone();
 
         // TODO: periodically reload the main manifest while live, and asset invariants
         let (href, body) = self.load_main_manifest().await?;
