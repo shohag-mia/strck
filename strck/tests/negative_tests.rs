@@ -34,6 +34,7 @@ fn create_test_client(server: &MockServer, logger: &TestLog) -> HlsProcessor<Nul
     let proc = strck::hls::HlsProcessor::new(
         client,
         reqwest::Url::parse(&server.url("/main.m3u8")).unwrap(),
+        5,
         logger.clone(),
         TestMetric,
         TestMetric,

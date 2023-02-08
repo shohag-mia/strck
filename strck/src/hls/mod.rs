@@ -308,6 +308,7 @@ impl HlsManifestError {
 pub struct HlsProcessor<S: Snoop, L: EventSink<Extra = HlsEvent>, M: Metric> {
     client: http_snoop::Client<S>,
     url: reqwest::Url,
+    sleep_time: u64,
     log: L,
     manifest_latency: M,
     stream_latency: M,
@@ -317,6 +318,7 @@ impl<S: Snoop, L: EventSink<Extra = HlsEvent>, M: Metric> HlsProcessor<S, L, M> 
     pub fn new(
         client: http_snoop::Client<S>,
         url: reqwest::Url,
+        sleep_time: u64,
         log: L,
         manifest_latency: M,
         stream_latency: M,
@@ -325,6 +327,7 @@ impl<S: Snoop, L: EventSink<Extra = HlsEvent>, M: Metric> HlsProcessor<S, L, M> 
         HlsProcessor {
             client,
             url,
+            sleep_time,
             log,
             manifest_latency,
             stream_latency,
@@ -344,6 +347,8 @@ impl<S: Snoop, L: EventSink<Extra = HlsEvent>, M: Metric> HlsProcessor<S, L, M> 
         let url = self.url.clone();
         let client = self.client.clone();
         let log = self.log.clone();
+        let sleep_time = self.sleep_time.clone();
+
         // TODO: periodically reload the main manifest while live, and asset invariants
         let (href, body) = self.load_main_manifest().await?;
         let main_manifest = hls_m3u8::MasterPlaylist::try_from(body.as_str())
@@ -366,6 +371,9 @@ impl<S: Snoop, L: EventSink<Extra = HlsEvent>, M: Metric> HlsProcessor<S, L, M> 
         let media_urls = media_urls
             .map_err(|e| HlsManifestError::Url(href, e))?;
         variant_urls.extend(media_urls);
+
+        // wait for some moment for segments to be available in server
+        tokio::time::delay_for(time::Duration::from_secs(sleep_time)).await;
 
         // unlike a real HLS client, we process all media-manifests in parallel rather than
         // sticking with a single bitrate
