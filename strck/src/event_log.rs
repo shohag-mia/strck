@@ -13,6 +13,7 @@ fn ser_simple_enum<S>(sev: &EventSeverity, s: S) -> Result<S::Ok, S::Error> wher
 pub struct CheckEvent<Extra: serde::Serialize> {
     #[serde(rename="entity_jobId")]
     pub entity_job_id: String,
+    pub event_id: String,
     pub time_id: String,
     #[serde(serialize_with = "ser_simple_enum")]
     pub severity: EventSeverity,
